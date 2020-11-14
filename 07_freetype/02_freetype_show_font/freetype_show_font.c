@@ -2,8 +2,8 @@
  * @Author: John Diamond
  * @Date: 2020-11-02 11:20:09
  * @LastEditors: John Diamond
- * @LastEditTime: 2020-11-14 18:59:06
- * @FilePath: /app/07_freetype/02_freetype_show_font/freetype_show_font.c
+ * @LastEditTime: 2020-11-14 21:21:55
+ * @FilePath: /Linux-Program-APP/07_freetype/02_freetype_show_font/freetype_show_font.c
  */
 #include <sys/mman.h>
 #include <sys/types.h>
@@ -63,9 +63,6 @@ void lcd_put_pixel(unsigned int x, unsigned int y, unsigned int color)
  * @return NULL
  */
 void draw_bitmap(unsigned int x, unsigned int y, FT_Bitmap*  bitmap, unsigned int color)
-
-			//image[j][i] |= bitmap->buffer[q * bitmap->width + p];
-			//lcd_put_pixel(i, j, bitmap->buffer[q * bitmap->width + p]);
 {
 	int i, j;
 	unsigned int show_x, show_y;
@@ -77,13 +74,14 @@ void draw_bitmap(unsigned int x, unsigned int y, FT_Bitmap*  bitmap, unsigned in
 				continue;
 			show_x = x + j;
 			show_y = y + i;
-			if(*bitmap->buffer)
+			//if(*bitmap->buffer)
+			if(bitmap->buffer[i * bitmap->width + j])
 				lcd_put_pixel(show_x, show_y, color);
-			(bitmap->buffer)++;
-			//printf("%d\n",*bitmap->buffer);
+			//(bitmap->buffer) += 2;
+			//printf("bitmap->buf++ addr = %d\n", bitmap->buffer++);
+			//printf("&bitmap->buf[i * bitmap->width + j] addr = %d\n", &bitmap->buffer[i * bitmap->width + j]);
 		}
 	}
-	//printf("bitmap->rows=%d bitmap->width=%d\n",bitmap->rows,bitmap->width);
 }
 
 int main(int argc, char *argv[])
@@ -94,11 +92,7 @@ int main(int argc, char *argv[])
 	int error;
 	FT_UInt font_size = 24;
 	FT_GlyphSlot slot;
-	//wchar_t *chinese = L"福";
-	wchar_t *chinese = L"福繁福";
-	//unsigned int *chinese_ptr = (unsigned int *)chinese;
-	printf("unicode is 0x%x \n", chinese[0]);
-	printf("unicode is 0x%x \n", chinese[1]);
+	wchar_t *chinese = L"福禄寿";
 
 	if(argc == 3)
 		font_size = strtoul(argv[2], NULL, 0);
@@ -135,16 +129,12 @@ int main(int argc, char *argv[])
 	if(error)
 		printf("set font size failed \n");
 	
-	
-	printf("wcslen(chinese)=%d \n",wcslen(chinese));
 	for(i = 0; i < wcslen(chinese); i++)
 	{
 		error = FT_Load_Char(face, chinese[i], FT_LOAD_RENDER);
 		if(error)
 			printf("load char failed \n");
-		printf("load chinese %d \n ", i);
 		draw_bitmap(var.xres / 4 + i * font_size, var.yres / 2, &slot->bitmap, 0xff00ff);
-		printf("drwa %d finished\n", i);
 	}
 
 	munmap(fb_base, ScreenSize);
